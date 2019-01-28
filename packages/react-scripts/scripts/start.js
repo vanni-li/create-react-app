@@ -82,6 +82,10 @@ if (process.env.HOST) {
 const { checkBrowsers } = require('react-dev-utils/browsersHelper');
 checkBrowsers(paths.appPath, isInteractive)
   .then(() => {
+    /**
+     * 端口没被占用，返回 DEFAULT_PORT
+     * 端口被占用，会提示用户是否使用新端口，用户同意了会返回新端口，不同意返回 null
+     */
     // We attempt to use the default port but if it is busy, we offer the user to
     // run on a different port. `choosePort()` Promise resolves to the next free port.
     return choosePort(HOST, DEFAULT_PORT);

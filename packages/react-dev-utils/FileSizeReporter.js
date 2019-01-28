@@ -130,6 +130,9 @@ function getDifferenceLabel(currentSize, previousSize) {
   }
 }
 
+/**
+ * 获取 build 目录 js 和 css 文件gzip压缩后的大小
+ */
 function measureFileSizesBeforeBuild(buildFolder) {
   return new Promise(resolve => {
     recursive(buildFolder, (err, fileNames) => {

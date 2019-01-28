@@ -7,6 +7,10 @@
 
 'use strict';
 
+/**
+ * console.log 输出一些构建相关的文案
+ */
+
 const chalk = require('chalk');
 const url = require('url');
 const globalModules = require('global-modules');

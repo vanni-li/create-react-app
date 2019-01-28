@@ -20,6 +20,9 @@ const defaultBrowsers = [
   'not op_mini all',
 ];
 
+/**
+ * 如果是交互式命令行，问用户是否愿意添加 target browsers
+ */
 function shouldSetBrowsers(isInteractive) {
   if (!isInteractive) {
     return Promise.resolve(true);
@@ -39,6 +42,12 @@ function shouldSetBrowsers(isInteractive) {
   return inquirer.prompt(question).then(answer => answer.shouldSetBrowsers);
 }
 
+/**
+ * 查找配置，package.json 中的 "browserslist"，或者 .browserslistrc
+ * 没找到配置会提示用户是否在 package.json 中添加默认配置
+ * 用户选择不添加，命令行会给出提示
+ * 
+ */
 function checkBrowsers(dir, isInteractive, retry = true) {
   const current = browserslist.findConfig(dir);
   if (current != null) {
@@ -60,10 +69,16 @@ function checkBrowsers(dir, isInteractive, retry = true) {
   }
 
   return shouldSetBrowsers(isInteractive).then(shouldSetBrowsers => {
+    /**
+     * 用户选择不添加默认，命令行给出提示
+     */
     if (!shouldSetBrowsers) {
       return checkBrowsers(dir, isInteractive, false);
     }
 
+    /**
+     * 查找最近的 package.json，写入默认的配置到 "browserslist" 字段
+     */
     return (
       pkgUp(dir)
         .then(filePath => {

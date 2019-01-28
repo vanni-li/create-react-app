@@ -7,6 +7,10 @@
 
 'use strict';
 
+/**
+ * 整理简化 webpack 的警告和错误输出
+ */
+
 const chalk = require('chalk');
 const friendlySyntaxErrorLabel = 'Syntax error:';
 

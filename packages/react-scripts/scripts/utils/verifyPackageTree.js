@@ -34,6 +34,11 @@ function verifyPackageTree() {
     /\bv?(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[\da-z-]+(?:\.[\da-z-]+)*)?(?:\+[\da-z-]+(?:\.[\da-z-]+)*)?\b/gi;
   const ownPackageJson = require('../../package.json');
   const expectedVersionsByDep = {};
+  
+  /**
+   * 检查 depsToCheck 指定的模块 package.json 存不存在，不存在给出提示
+   */
+
   // Gather wanted deps
   depsToCheck.forEach(dep => {
     const expectedVersion = ownPackageJson.dependencies[dep];
@@ -47,6 +52,11 @@ function verifyPackageTree() {
     }
     expectedVersionsByDep[dep] = expectedVersion;
   });
+
+  /**
+   * 递归往上查找 node_modules 里的模块，检查 depsToCheck 里的模块安装的版本是不是 package.json 里指定的版本，不是给出错误提示，退出进程
+   */
+
   // Verify we don't have other versions up the tree
   let currentDir = __dirname;
   // eslint-disable-next-line no-constant-condition

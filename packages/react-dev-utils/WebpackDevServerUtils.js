@@ -131,6 +131,9 @@ function createCompiler(webpack, config, appName, urls, useYarn) {
   // recompiling a bundle. WebpackDevServer takes care to pause serving the
   // bundle, so if you refresh, it'll wait instead of serving the old one.
   // "invalid" is short for "bundle invalidated", it doesn't imply any errors.
+  /**
+   * 修改文件重新编译时触发
+   */
   compiler.hooks.invalid.tap('invalid', () => {
     if (isInteractive) {
       clearConsole();
@@ -142,6 +145,9 @@ function createCompiler(webpack, config, appName, urls, useYarn) {
 
   // "done" event fires when Webpack has finished recompiling the bundle.
   // Whether or not you have warnings or errors, you will get this event.
+  /**
+   * 编译完成时触发
+   */
   compiler.hooks.done.tap('done', stats => {
     if (isInteractive) {
       clearConsole();
@@ -267,6 +273,11 @@ function onProxyError(proxy) {
   };
 }
 
+/**
+ * proxy 必须为 http 或 https 开头的 url
+ * appPublicFolder 指定路径下的文件不做代理，一般指 public 文件夹
+ * 返回 webpack-dev-server proxy 字段所需的配置项
+ */
 function prepareProxy(proxy, appPublicFolder) {
   // `proxy` lets you specify alternate servers for specific requests.
   if (!proxy) {
@@ -320,6 +331,11 @@ function prepareProxy(proxy, appPublicFolder) {
       // Modern browsers include text/html into `accept` header when navigating.
       // However API calls like `fetch()` won’t generally accept text/html.
       // If this heuristic doesn’t work well for you, use `src/setupProxy.js`.
+      /**
+       * 代理的情况包括：
+       * 非 get 请求
+       * 排除 public 目录的 get 请求，且 accept 不为 text/html  (其他类型的静态资源呢？)
+       */
       context: function(pathname, req) {
         return (
           req.method !== 'GET' ||
@@ -346,6 +362,9 @@ function prepareProxy(proxy, appPublicFolder) {
 }
 
 function choosePort(host, defaultPort) {
+  /**
+   * detect：被占用的话返回新的port
+   */
   return detect(defaultPort, host).then(
     port =>
       new Promise(resolve => {
@@ -356,6 +375,10 @@ function choosePort(host, defaultPort) {
           process.platform !== 'win32' && defaultPort < 1024 && !isRoot()
             ? `Admin permissions are required to run a server on a port below 1024.`
             : `Something is already running on port ${defaultPort}.`;
+        /**
+         * 端口被占的情况
+         * 交互式命令行，让用户确认一下是否换端口，如果不换则返回 null
+         */
         if (isInteractive) {
           clearConsole();
           const existingProcess = getProcessForPort(defaultPort);
@@ -369,6 +392,9 @@ function choosePort(host, defaultPort) {
               ) + '\n\nWould you like to run the app on another port instead?',
             default: true,
           };
+          /**
+           * 如果端口被占，询问用户是否愿意换一个
+           */
           inquirer.prompt(question).then(answer => {
             if (answer.shouldChangePort) {
               resolve(port);

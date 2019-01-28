@@ -22,6 +22,11 @@ if (!NODE_ENV) {
   );
 }
 
+/**
+ * 载入 .env / .env.local / .env.development.local / .env.production.local ...
+ * 读取内容并写入到 process.env 中
+ */
+
 // https://github.com/bkeepers/dotenv#what-other-env-files-can-i-use
 var dotenvFiles = [
   `${paths.dotenv}.${NODE_ENV}.local`,
@@ -67,6 +72,10 @@ process.env.NODE_PATH = (process.env.NODE_PATH || '')
 // Grab NODE_ENV and REACT_APP_* environment variables and prepare them to be
 // injected into the application via DefinePlugin in Webpack configuration.
 const REACT_APP = /^REACT_APP_/i;
+
+/**
+ * REACT_APP_ 开头的自定义环境变量，才会被写入到 process.env 中 ? 
+ */
 
 function getClientEnvironment(publicUrl) {
   const raw = Object.keys(process.env)

@@ -21,6 +21,9 @@ function writeJson(fileName, object) {
   fs.writeFileSync(fileName, JSON.stringify(object, null, 2) + os.EOL);
 }
 
+/**
+ * 检测项目里是否有 typescript 代码
+ */
 function verifyNoTypeScript() {
   const typescriptFiles = globby(['**/*.(ts|tsx)', '!**/node_modules'], { cwd: paths.appSrc });
   if (typescriptFiles.length > 0) {
@@ -37,9 +40,13 @@ function verifyNoTypeScript() {
   return true;
 }
 
+
 function verifyTypeScriptSetup() {
   let firstTimeSetup = false;
 
+  /**
+   * 如果项目里有 typescript 文件，并且有没有 tsconfig.json，则为用户创建配置文件
+   */
   if (!fs.existsSync(paths.appTsConfig)) {
     if (verifyNoTypeScript()) {
       return;

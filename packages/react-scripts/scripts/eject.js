@@ -7,6 +7,13 @@
  */
 'use strict';
 
+/**
+ * 拷贝这些文件 ['config', 'config/jest', 'scripts'] 到 appPath 里
+ * 让你能够定制一切
+ * 官方不推荐，若想定制可以 fork react-scripts
+ * https://facebook.github.io/create-react-app/docs/alternatives-to-ejecting
+ */
+
 // Makes the script crash on unhandled rejections instead of silently
 // ignoring them. In the future, promise rejections that are not handled will
 // terminate the Node.js process with a non-zero exit code.

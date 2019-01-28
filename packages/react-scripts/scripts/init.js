@@ -23,6 +23,9 @@ const { defaultBrowsers } = require('react-dev-utils/browsersHelper');
 const os = require('os');
 const verifyTypeScriptSetup = require('./utils/verifyTypeScriptSetup');
 
+/**
+ * 是否有对应 git 仓库
+ */
 function isInGitRepository() {
   try {
     execSync('git rev-parse --is-inside-work-tree', { stdio: 'ignore' });
@@ -41,6 +44,9 @@ function isInMercurialRepository() {
   }
 }
 
+/**
+ * 若 git 没有初始化，则帮初始化 git 并 commit 
+ */
 function tryGitInit(appPath) {
   let didInit = false;
   try {
@@ -109,6 +115,9 @@ module.exports = function(
   // Setup the browsers list
   appPackage.browserslist = defaultBrowsers;
 
+  /**
+   * 配置写入 package.json
+   */
   fs.writeFileSync(
     path.join(appPath, 'package.json'),
     JSON.stringify(appPackage, null, 2) + os.EOL
@@ -122,6 +131,9 @@ module.exports = function(
     );
   }
 
+  /**
+   * 拷贝 template 下文件到项目目录里
+   */
   // Copy the files for the user
   const templatePath = template
     ? path.resolve(originalDirectory, template)
@@ -135,6 +147,10 @@ module.exports = function(
     return;
   }
 
+  /**
+   * 重命名 gitignore 为 .gitignore
+   * 若 .gitignore 已经存在，读取 gitignore 内容添加到 .gitignore 后面
+   */
   // Rename gitignore after the fact to prevent npm from renaming it to .npmignore
   // See: https://github.com/npm/npm/issues/1862
   try {
@@ -154,6 +170,11 @@ module.exports = function(
     }
   }
 
+
+  /**
+   * 安装 react react-dom
+   * 如果项目目录下有 .template.dependencies.json 文件，会安装这个文件指定的依赖，并删除该文件
+   */
   let command;
   let args;
 
@@ -181,6 +202,7 @@ module.exports = function(
     fs.unlinkSync(templateDependenciesPath);
   }
 
+  
   // Install react and react-dom for backward compatibility with old CRA cli
   // which doesn't install react and react-dom along with react-scripts
   // or template is presetend (via --internal-testing-template)
@@ -188,6 +210,10 @@ module.exports = function(
     console.log(`Installing react and react-dom using ${command}...`);
     console.log();
 
+
+    /**
+     * 若 react react-dom 没有安装，则同步安装 react react-dom，以及 .template.dependencies.json 指定的依赖
+     */
     const proc = spawn.sync(command, args, { stdio: 'inherit' });
     if (proc.status !== 0) {
       console.error(`\`${command} ${args.join(' ')}\` failed`);
@@ -199,6 +225,9 @@ module.exports = function(
     verifyTypeScriptSetup();
   }
 
+  /**
+   * 初始化 git
+   */
   if (tryGitInit(appPath)) {
     console.log();
     console.log('Initialized a git repository.');
@@ -214,6 +243,10 @@ module.exports = function(
     cdpath = appPath;
   }
 
+
+  /**
+   * 一切完成后，命令行输入各种提示
+   */
   // Change displayed command to yarn instead of yarnpkg
   const displayedCommand = useYarn ? 'yarn' : 'npm';
 

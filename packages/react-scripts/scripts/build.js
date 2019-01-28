@@ -81,6 +81,9 @@ checkBrowsers(paths.appPath, isInteractive)
     // if you're in it, you don't end up in Trash
     fs.emptyDirSync(paths.appBuild);
     // Merge with the public folder
+    /**
+     * 拷贝 public 目录到构建目录，去掉 index.html 模板文件
+     */
     copyPublicFolder();
     // Start the webpack build
     return build(previousFileSizes);
@@ -200,6 +203,9 @@ function build(previousFileSizes) {
   });
 }
 
+/**
+ * 拷贝 public 目录到构建目录，去掉 index.html 模板文件
+ */
 function copyPublicFolder() {
   fs.copySync(paths.appPublic, paths.appBuild, {
     dereference: true,

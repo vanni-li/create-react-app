@@ -18,6 +18,11 @@ process.on('unhandledRejection', err => {
 const spawn = require('react-dev-utils/crossSpawn');
 const args = process.argv.slice(2);
 
+/**
+ * 调用如：node bin/react-scripts.js build
+ * args 则为 ["build"]
+ */
+
 const scriptIndex = args.findIndex(
   x => x === 'build' || x === 'eject' || x === 'start' || x === 'test'
 );

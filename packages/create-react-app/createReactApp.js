@@ -196,7 +196,11 @@ function createApp(
   const root = path.resolve(name);
   const appName = path.basename(root);
 
+  /**
+   * 检测 appName 合法性，不合法就退出 
+   */
   checkAppName(appName);
+
   fs.ensureDirSync(name);
   if (!isSafeToCreateProjectIn(root, name)) {
     process.exit(1);
@@ -205,6 +209,9 @@ function createApp(
   console.log(`Creating a new React app in ${chalk.green(root)}.`);
   console.log();
 
+  /**
+   * 初始化 package.json
+   */
   const packageJson = {
     name: appName,
     version: '0.1.0',
@@ -217,11 +224,15 @@ function createApp(
 
   const useYarn = useNpm ? false : shouldUseYarn();
   const originalDirectory = process.cwd();
+  /** 修改进程的 cwd */
   process.chdir(root);
   if (!useYarn && !checkThatNpmCanReadCwd()) {
     process.exit(1);
   }
 
+  /**
+   * Node 版本小宇 6.0.0，使用老版本的 react-scripts (react-scripts@0.9.x)
+   */
   if (!semver.satisfies(process.version, '>=6.0.0')) {
     console.log(
       chalk.yellow(
@@ -235,6 +246,9 @@ function createApp(
     version = 'react-scripts@0.9.x';
   }
 
+  /**
+   * npm version 小于 3.0.0，也使用老的 react-scripts (react-scripts@0.9.x)
+   */
   if (!useYarn) {
     const npmInfo = checkNpmVersion();
     if (!npmInfo.hasMinNpm) {
@@ -252,6 +266,9 @@ function createApp(
       version = 'react-scripts@0.9.x';
     }
   } else if (usePnp) {
+    /**
+     * yarn 版本太老也给出提示
+     */
     const yarnInfo = checkYarnVersion();
     if (!yarnInfo.hasMinYarnPnp) {
       if (yarnInfo.yarnVersion) {
@@ -287,6 +304,9 @@ function createApp(
   );
 }
 
+/**
+ * 是否能使用 yarn
+ */
 function shouldUseYarn() {
   try {
     execSync('yarnpkg --version', { stdio: 'ignore' });
@@ -296,6 +316,9 @@ function shouldUseYarn() {
   }
 }
 
+/**
+ * npm 或者 yarn 安装依赖
+ */
 function install(root, useYarn, usePnp, dependencies, verbose, isOnline) {
   return new Promise((resolve, reject) => {
     let command;
@@ -400,6 +423,9 @@ function run(
       );
       console.log();
 
+      /**
+       * 安装 react react-dom react-scripts 等依赖包
+       */
       return install(
         root,
         useYarn,
@@ -410,19 +436,25 @@ function run(
       ).then(() => packageName);
     })
     .then(async packageName => {
+      /** 读取 react-scripts 里的 package.json，取出 engines.node，看当前的 node 版本是否符合要求 */
       checkNodeVersion(packageName);
+      /** 检测 react-scripts, react, react-dom 在项目的 package.json dependencies 中是否存在，不存在则退出进程 */
       setCaretRangeForRuntimeDeps(packageName);
 
       const pnpPath = path.resolve(process.cwd(), '.pnp.js');
 
       const nodeArgs = fs.existsSync(pnpPath) ? ['--require', pnpPath] : [];
 
+      /**
+       * 载入 react-scripts/scripts/init.js 并执行
+       * 初始化项目文件
+       */
       await executeNodeScript(
         {
           cwd: process.cwd(),
           args: nodeArgs,
         },
-        [root, appName, verbose, originalDirectory, template],
+        [root, appName, verbose, originalDirectory, template],    // 这个数组，会传入到 init 函数的 arguments
         `
         var init = require('${packageName}/scripts/init.js');
         init.apply(null, JSON.parse(process.argv[1]));
@@ -448,6 +480,10 @@ function run(
         console.log(reason);
       }
       console.log();
+
+      /**
+       * 失败后删除生成的文件和文件夹
+       */
 
       // On 'exit' we will delete these files from target directory.
       const knownGeneratedFiles = ['package.json', 'yarn.lock', 'node_modules'];
@@ -477,6 +513,9 @@ function run(
     });
 }
 
+/**
+ * 返回需要安装的包，主要指 react-scripts
+ */
 function getInstallPackage(version, originalDirectory) {
   let packageToInstall = 'react-scripts';
   const validSemver = semver.valid(version);
@@ -536,6 +575,10 @@ function extractStream(stream, dest) {
   });
 }
 
+/**
+ * 根据安装名提取出包名，比如 react-scripts@2.0.0 提取出 react-scripts
+ * 还支持其他一些不常见的情况，比如 .gz, file: 等，从这些路径中提取出包名
+ */
 // Extract package name from tarball url or path.
 function getPackageName(installPackage) {
   if (installPackage.match(/^.+\.(tgz|tar\.gz)$/)) {
@@ -591,6 +634,9 @@ function getPackageName(installPackage) {
   return Promise.resolve(installPackage);
 }
 
+/**
+ * 获取 npm version，返回一个对象，version >= 3.0.0 时，hasMinNpm 为 true
+ */
 function checkNpmVersion() {
   let hasMinNpm = false;
   let npmVersion = null;
@@ -608,6 +654,9 @@ function checkNpmVersion() {
   };
 }
 
+/**
+ * 获取 yarn version，返回一个对象
+ */
 function checkYarnVersion() {
   let hasMinYarnPnp = false;
   let yarnVersion = null;
@@ -629,6 +678,9 @@ function checkYarnVersion() {
   };
 }
 
+/**
+ * 读取 react-scripts 里的 package.json，取出 engines.node，看当前的 node 版本是否符合要求
+ */
 function checkNodeVersion(packageName) {
   const packageJsonPath = path.resolve(
     process.cwd(),
@@ -660,6 +712,9 @@ function checkNodeVersion(packageName) {
   }
 }
 
+/**
+ * 检测 appName 格式的合法性
+ */
 function checkAppName(appName) {
   const validationResult = validateProjectName(appName);
   if (!validationResult.validForNewPackages) {
@@ -690,6 +745,10 @@ function checkAppName(appName) {
   }
 }
 
+/**
+ * 检测 package.json 的 dependencies 中指定的依赖是否存在，不存在退出进程
+ * 若存在，给版本号前加 ^
+ */
 function makeCaretRange(dependencies, name) {
   const version = dependencies[name];
 
@@ -712,6 +771,9 @@ function makeCaretRange(dependencies, name) {
   dependencies[name] = patchedVersion;
 }
 
+/**
+ * 检测 react-scripts, react, react-dom 在项目的 package.json dependencies 中是否存在，不存在则退出进程
+ */
 function setCaretRangeForRuntimeDeps(packageName) {
   const packagePath = path.join(process.cwd(), 'package.json');
   const packageJson = require(packagePath);
@@ -727,9 +789,15 @@ function setCaretRangeForRuntimeDeps(packageName) {
     process.exit(1);
   }
 
+  /**
+   * 检测 react, react-dom 在 dependencies 中是否存在，并检测他们版本号的有效性
+   */
   makeCaretRange(packageJson.dependencies, 'react');
   makeCaretRange(packageJson.dependencies, 'react-dom');
 
+  /**
+   * react, react-dom 的版本号前加了 ^ ，要存一下
+   */
   fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2) + os.EOL);
 }
 
@@ -738,6 +806,11 @@ function setCaretRangeForRuntimeDeps(packageName) {
 // installation, lets remove them now.
 // We also special case IJ-based products .idea because it integrates with CRA:
 // https://github.com/facebook/create-react-app/pull/368#issuecomment-243446094
+/**
+ * 检测项目目录里，除了 validFiles errorLogFilePatterns 等指定的文件外，是否含有其他文件
+ * 若含有则返回 false, 后面会退出进程
+ * 不含有，会删除多余的错误日志文件
+ */
 function isSafeToCreateProjectIn(root, name) {
   const validFiles = [
     '.DS_Store',
@@ -785,6 +858,9 @@ function isSafeToCreateProjectIn(root, name) {
     return false;
   }
 
+  /**
+   * 删除日志文件
+   */
   // Remove any remnant files from a previous installation
   const currentFiles = fs.readdirSync(path.join(root));
   currentFiles.forEach(file => {
@@ -813,6 +889,10 @@ function getProxy() {
     }
   }
 }
+
+/**
+ * 检测 cwd 目录是否能运行 npm
+ */
 function checkThatNpmCanReadCwd() {
   const cwd = process.cwd();
   let childOutput = null;
@@ -874,6 +954,9 @@ function checkThatNpmCanReadCwd() {
   return false;
 }
 
+/**
+ * 检测 Yarn registry 是否能联通
+ */
 function checkIfOnline(useYarn) {
   if (!useYarn) {
     // Don't ping the Yarn registry.
@@ -897,6 +980,9 @@ function checkIfOnline(useYarn) {
   });
 }
 
+/**
+ * 执行一段 code
+ */
 function executeNodeScript({ cwd, args }, data, source) {
   return new Promise((resolve, reject) => {
     const child = spawn(

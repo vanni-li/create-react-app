@@ -325,6 +325,11 @@ module.exports = function(webpackEnv) {
           include: paths.appSrc,
         },
         {
+          /**
+           * 在 oneOf 里放置所有规则，匹配上了就不会匹配后面的规则
+           * 最后一个 file-loader 没有指定 test，前面没匹配上的就用最后一个来处理
+           */
+
           // "oneOf" will traverse all following loaders until one will
           // match the requirements. When no loader matches it will fall
           // back to the "file" loader at the end of the loader list.
@@ -386,6 +391,9 @@ module.exports = function(webpackEnv) {
                 // This is a feature of `babel-loader` for webpack (not Babel itself).
                 // It enables caching results in ./node_modules/.cache/babel-loader/
                 // directory for faster rebuilds.
+                /**
+                 * 缓存，提高编译速度
+                 */
                 cacheDirectory: true,
                 cacheCompression: isEnvProduction,
                 compact: isEnvProduction,
@@ -393,6 +401,10 @@ module.exports = function(webpackEnv) {
             },
             // Process any JS outside of the app with Babel.
             // Unlike the application JS, we only compile the standard ES features.
+            /**
+             * 这里没加 include: paths.appSrc
+             * 只匹配 appSrc 外的 js
+             */
             {
               test: /\.(js|mjs)$/,
               exclude: /@babel(?:\/|\\{1,2})runtime/,
@@ -451,6 +463,9 @@ module.exports = function(webpackEnv) {
             },
             // Adds support for CSS Modules (https://github.com/css-modules/css-modules)
             // using the extension .module.css
+            /**
+             * 只对 .module.css 开启 css module
+             */
             {
               test: cssModuleRegex,
               use: getStyleLoaders({
@@ -562,6 +577,9 @@ module.exports = function(webpackEnv) {
       // It is absolutely essential that NODE_ENV is set to production
       // during a production build.
       // Otherwise React will be compiled in the very slow development mode.
+      /**
+       * 把环境变量，REACT_APP_ 开头用户自定义的环境变量 写入到页面中，使页面可以访问到
+       */
       new webpack.DefinePlugin(env.stringified),
       // This is necessary to emit hot updates (currently CSS only):
       isEnvDevelopment && new webpack.HotModuleReplacementPlugin(),

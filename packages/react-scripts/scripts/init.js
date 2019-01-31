@@ -24,7 +24,7 @@ const os = require('os');
 const verifyTypeScriptSetup = require('./utils/verifyTypeScriptSetup');
 
 /**
- * 是否有对应 git 仓库
+ * 当前文件夹是否已经关联 git 仓库
  */
 function isInGitRepository() {
   try {

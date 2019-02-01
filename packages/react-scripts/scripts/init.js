@@ -88,9 +88,11 @@ module.exports = function(
   originalDirectory,
   template
 ) {
+  /** react-scripts 的根目录 */
   const ownPath = path.dirname(
     require.resolve(path.join(__dirname, '..', 'package.json'))
   );
+  /** 项目的 package */
   const appPackage = require(path.join(appPath, 'package.json'));
   const useYarn = fs.existsSync(path.join(appPath, 'yarn.lock'));
 
@@ -133,6 +135,7 @@ module.exports = function(
 
   /**
    * 拷贝 template 下文件到项目目录里
+   * 如果提供了 template 参数，则从指定的拷，如果没有则从 react-scripts/template 拷贝
    */
   // Copy the files for the user
   const templatePath = template

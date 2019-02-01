@@ -113,6 +113,9 @@ function printInstructions(appName, urls, useYarn) {
   console.log();
 }
 
+/**
+ * 创建 webpack compiler
+ */
 function createCompiler(webpack, config, appName, urls, useYarn) {
   // "Compiler" is a low-level interface to Webpack.
   // It lets us listen to some events and provide our own custom messages.
